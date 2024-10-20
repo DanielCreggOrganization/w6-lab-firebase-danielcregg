@@ -6,7 +6,6 @@
             "version": "latest"
         }
     },
-    "postStartCommand": "npm install -g npm@latest",
     "customizations": {
         "vscode": {
             "extensions": [
