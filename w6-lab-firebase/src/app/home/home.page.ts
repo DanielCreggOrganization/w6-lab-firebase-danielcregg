@@ -1,5 +1,30 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
-import { AlertController, LoadingController, CheckboxCustomEvent, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons, IonIcon, IonList, IonItemSliding, IonItem, IonLabel, IonCheckbox, IonItemOptions, IonItemOption, IonModal, IonInput, IonRow, IonCol, IonFab, IonFabButton } from '@ionic/angular/standalone';
+import { 
+  AlertController, 
+  LoadingController, 
+  CheckboxCustomEvent, 
+  IonHeader, 
+  IonToolbar, 
+  IonTitle, 
+  IonContent, 
+  IonButton, 
+  IonButtons,
+  IonList, 
+  IonItemSliding, 
+  IonItem, 
+  IonLabel,
+  IonIcon,
+  IonCheckbox, 
+  IonItemOptions, 
+  IonItemOption, 
+  IonModal, 
+  IonInput, 
+  IonRow, 
+  IonCol, 
+  IonFab, 
+  IonFabButton, 
+} from '@ionic/angular/standalone';
+
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 import { TasksService, Task } from '../tasks.service';
@@ -14,7 +39,7 @@ import { CommonModule } from '@angular/common';
   imports: [
     CommonModule,
     FormsModule,
-    IonHeader, 
+    IonHeader,
     IonToolbar,
     IonTitle,
     IonContent,
@@ -34,14 +59,14 @@ import { CommonModule } from '@angular/common';
     IonCol,
     IonFab,
     IonFabButton,
-    ],
+  ],
 })
 
 export class HomePage implements AfterViewInit {
   newTask!: Task; // This is the task that will be added to the database.
   @ViewChild(IonModal) modal!: IonModal; // Find the first IonModal in my template and assign it to the modal property of my class.
   tasks$ = this.tasksService.readTasks(); // This is an observable that will emit the current value of the tasks array.
-  
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -59,7 +84,7 @@ export class HomePage implements AfterViewInit {
       completed: false,
     };
   }
-  
+
   // This method is used to log the user out. The button will be found in the top right corner of the home page.
   async logout() {
     // Call the logout method in the auth service. Use await to wait for the logout to complete before continuing.
