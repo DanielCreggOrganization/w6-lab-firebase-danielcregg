@@ -1,4 +1,7 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { 
   AlertController, 
   LoadingController, 
@@ -24,12 +27,10 @@ import {
   IonFab, 
   IonFabButton, 
 } from '@ionic/angular/standalone';
-
+import { addIcons } from 'ionicons';
+import { logOutOutline, pencilOutline, trashOutline, add } from 'ionicons/icons';
 import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
 import { TasksService, Task } from '../tasks.service';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -74,7 +75,8 @@ export class HomePage implements AfterViewInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    this.resetTask(); // Initialize the newTask property.
+    this.resetTask();
+    addIcons({ logOutOutline, pencilOutline, trashOutline, add });
   }
 
   // This method is used to reset the newTask property. This will clear the input in the modal.
