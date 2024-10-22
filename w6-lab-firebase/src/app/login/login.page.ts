@@ -18,12 +18,14 @@ import { IonicModule } from '@ionic/angular';
   ],
 })
 export class LoginPage {
-
   private fb = inject(FormBuilder); // Inject the FormBuilder to handle form validation in reactive forms
   private loadingController = inject(LoadingController); // Inject the LoadingController to handle loading state by displaying a spinner
   private alertController = inject(AlertController); // Inject the AlertController to handle errors and display alert messages
   private authService = inject(AuthService); // Inject the AuthService to handle login and registration
   private router = inject(Router); // Inject the Router to redirect after successful login
+
+  // Add a showPassword property to the LoginPage class. This will be used to toggle the visibility of the password input.
+  showPassword = false;
 
   credentials = this.fb.nonNullable.group({
     email: ['daniel.cregg@atu.ie', [Validators.required, Validators.email]],

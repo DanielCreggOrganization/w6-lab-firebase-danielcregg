@@ -1,60 +1,87 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>My App</ion-title>
+    <ion-title class="ion-text-center">Welcome Back</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Add a form to the template. ngSubmit event is bound to login() method
-    which will be added to the component class. formGroup directive is bound to
-    credentials property which will be added to the component class. -->
   <form (ngSubmit)="login()" [formGroup]="credentials">
-    <ion-item class="ion-margin-bottom">
-      <ion-input
-        type="email"
-        placeholder="Email"
-        formControlName="email"
-      ></ion-input>
-      <!-- Note appears to the right of slot if input is invalid. If the email input has been touched and is invalid, display the invalid message -->
-      @if ((email.dirty || email.touched) && email.errors) {
-        <ion-note slot="end">Email is invalid</ion-note>
-      }
-    </ion-item>
-    <!-- Add password input -->
-    <ion-item class="ion-margin-bottom">
-      <ion-input
-        type="password"
-        placeholder="Password"
-        formControlName="password"
-      ></ion-input>
-      <!-- Note appears to the right of the slot if input is invalid -->
-      @if ((password.dirty || password.touched) && password.errors) {
-        <ion-note slot="end">Password needs to contain a minimum of 6 characters</ion-note>
-      }
-    </ion-item>
-    <!-- Add Log in button which is disabled while credentials are invalid -->
-    <ion-button 
-      type="submit" 
-      expand="block" 
-      [disabled]="!credentials.valid"
-      >Log in</ion-button
-    >
-    <!-- Add register button which is disabled while credentials are invalid -->
-    <ion-button
-      type="button"
-      expand="block"
-      color="secondary"
-      [disabled]="!credentials.valid"
-      (click)="register()"
-      >Create Account</ion-button
-    >
-    <!-- Add reset password button -->
-    <ion-button
-      expand="block"
-      color="tertiary"
-      (click)="sendReset()"
-      [disabled]="email.invalid"
-      >Reset password</ion-button
-    >
+    <ion-card>
+      <ion-card-content>
+        <ion-item>
+          <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
+          <ion-input
+            type="email"
+            label="Email"
+            labelPlacement="floating"
+            formControlName="email"
+          ></ion-input>
+        </ion-item>
+        @if ((email.dirty || email.touched) && email.errors) {
+          <ion-text color="danger" class="ion-padding-start">
+            <small>Please enter a valid email address</small>
+          </ion-text>
+        }
+
+        <ion-item>
+          <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
+          <ion-label position="floating">Password</ion-label>
+          <ion-input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+          ></ion-input>
+          <ion-button 
+            fill="clear"
+            slot="end"
+            (click)="showPassword = !showPassword"
+          >
+            <ion-icon
+              slot="icon-only"
+              [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+              color="medium"
+            ></ion-icon>
+          </ion-button>
+        </ion-item>
+        @if ((password.dirty || password.touched) && password.errors) {
+          <ion-text color="danger" class="ion-padding-start">
+            <small>Password must be at least 6 characters</small>
+          </ion-text>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <div class="ion-padding-vertical">
+      <ion-button 
+        type="submit" 
+        expand="block" 
+        [disabled]="!credentials.valid"
+        class="ion-margin-bottom"
+      >
+        <ion-icon name="log-in-outline" slot="start"></ion-icon>
+        Sign In
+      </ion-button>
+
+      <ion-button
+        type="button"
+        expand="block"
+        color="secondary"
+        [disabled]="!credentials.valid"
+        (click)="register()"
+        class="ion-margin-bottom"
+      >
+        <ion-icon name="person-add-outline" slot="start"></ion-icon>
+        Create Account
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        expand="block"
+        color="medium"
+        (click)="sendReset()"
+        [disabled]="email.invalid"
+      >
+        Forgot Password?
+      </ion-button>
+    </div>
   </form>
 </ion-content>
