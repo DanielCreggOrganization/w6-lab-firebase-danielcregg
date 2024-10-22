@@ -27,14 +27,10 @@
         placeholder="Password"
         formControlName="password"
       ></ion-input>
-    
       <!-- Note appears to the right of the slot if input is invalid -->
-      <ion-note
-        slot="end"
-        *ngIf="(password.dirty || password.touched) && password.errors"
-        >Password needs to contain a minimum 6 characters
-      </ion-note>
-    
+      @if ((password.dirty || password.touched) && password.errors) {
+        <ion-note slot="end">Password needs to contain a minimum 6 characters</ion-note>
+      }
     </ion-item>
 
     <!-- Add Log in button which is disabled while credentials are invalid -->
