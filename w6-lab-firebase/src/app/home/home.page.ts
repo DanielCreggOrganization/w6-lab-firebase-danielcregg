@@ -1,33 +1,34 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ViewChild, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { 
-  AlertController, 
-  LoadingController, 
-  CheckboxCustomEvent, 
-  IonHeader, 
-  IonToolbar, 
-  IonTitle, 
-  IonContent, 
-  IonButton, 
+import {
+  AlertController,
+  LoadingController,
+  CheckboxCustomEvent,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
   IonButtons,
-  IonList, 
-  IonItemSliding, 
-  IonItem, 
+  IonList,
+  IonItemSliding,
+  IonItem,
   IonLabel,
   IonIcon,
-  IonCheckbox, 
-  IonItemOptions, 
-  IonItemOption, 
-  IonModal, 
-  IonInput, 
-  IonRow, 
-  IonCol, 
-  IonFab, 
-  IonFabButton, 
+  IonCheckbox,
+  IonItemOptions,
+  IonItemOption,
+  IonModal,
+  IonInput,
+  IonRow,
+  IonCol,
+  IonFab,
+  IonFabButton,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
+import { Observable } from 'rxjs';
 import { logOutOutline, pencilOutline, trashOutline, add } from 'ionicons/icons';
 import { AuthService } from '../auth.service';
 import { TasksService, Task } from '../tasks.service';
@@ -66,17 +67,20 @@ import { TasksService, Task } from '../tasks.service';
 export class HomePage implements AfterViewInit {
   newTask!: Task; // This is the task that will be added to the database.
   @ViewChild(IonModal) modal!: IonModal; // Find the first IonModal in my template and assign it to the modal property of my class.
-  tasks$ = this.tasksService.readTasks(); // This is an observable that will emit the current value of the tasks array.
+  tasks$!: Observable<Task[]>; // This is an observable that will emit the current value of the tasks array. // This is an observable that will emit the current value of the tasks array.
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private tasksService: TasksService,
-    private loadingController: LoadingController,
-    private alertController: AlertController
-  ) {
+  private authService = inject(AuthService);
+  private tasksService = inject(TasksService);
+  private router = inject(Router);
+  private loadingController = inject(LoadingController);
+  private alertController = inject(AlertController);
+
+  constructor() { }
+
+  ngOnInit() {
     this.resetTask();
     addIcons({ logOutOutline, pencilOutline, trashOutline, add });
+    this.tasks$ = this.tasksService.readTasks();
   }
 
   // This method is used to reset the newTask property. This will clear the input in the modal.

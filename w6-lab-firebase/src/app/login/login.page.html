@@ -17,11 +17,9 @@
         formControlName="email"
       ></ion-input>
       <!-- Note appears to the right of slot if input is invalid. If the email input has been touched and is invalid, display the invalid message -->
-      <ion-note
-        slot="end"
-        *ngIf="(email.dirty || email.touched) && email.errors"
-        >Email is invalid</ion-note
-      >
+      @if ((email.dirty || email.touched) && email.errors) {
+        <ion-note slot="end">Email is invalid</ion-note>
+      }
     </ion-item>
     <!-- Add password input -->
     <ion-item class="ion-margin-bottom">
