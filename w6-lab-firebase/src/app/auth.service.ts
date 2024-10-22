@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   Auth, // Used to get the current user and subscribe to the auth state.
   createUserWithEmailAndPassword, // Used to create a user in Firebase auth.
@@ -12,9 +12,12 @@ import { doc, Firestore, setDoc } from '@angular/fire/firestore'; // Used to int
   providedIn: 'root', // This service is provided in the root injector (AppModule). This means that the service will be available to the entire application.
 })
 export class AuthService {
-  // Inject Firestore service. We need it to create a user profile in Firestore.
-  constructor(private auth: Auth, private firestore: Firestore) {}
-
+  // Inject the Auth and Firestore services. 
+  private auth = inject(Auth); // Inject AngularFireAuth service. We need it to create a user in Firebase auth.
+  private firestore = inject(Firestore);
+  
+  constructor() {}
+  
   // Sign up with email/password. Creates user in Firebase auth and adds user info to Firestore database
   async register({ email, password }: { email: string; password: string }) {
     try {

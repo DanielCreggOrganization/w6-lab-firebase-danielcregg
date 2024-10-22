@@ -1,5 +1,4 @@
-
-import { Injectable } from '@angular/core'; // Used to make the service injectable.
+import { Injectable, inject } from '@angular/core'; // Used to make the service injectable.
 import { Auth, onAuthStateChanged } from '@angular/fire/auth'; // Used to get the current user and subscribe to the auth state.
 import {
   addDoc, // Used to add a document to Firestore.
@@ -30,6 +29,10 @@ export interface Task {
   providedIn: 'root',
 })
 export class TasksService {
+
+  private firestore = inject(Firestore);
+  private auth = inject(Auth);
+
   // Create a reference to the tasks collection. This is a reference to the collection in Firestore.
   private collectionRef: CollectionReference;
   // Create a BehaviorSubject observable. This stores the current value of tasks and will emit its current value to any new subscribers immediately upon subscription
@@ -37,10 +40,7 @@ export class TasksService {
   // Create a subscription to the tasks collection. This is a subscription to the collection in Firestore.
   private tasksSub!: Subscription;
 
-  constructor(
-    private firestore: Firestore, // Inject the Firestore service.
-    private auth: Auth // Inject the Auth service.
-  ) {
+  constructor() {
     // Create a reference to the tasks collection. This is a reference to the collection in Firestore.
     this.collectionRef = collection(this.firestore, 'tasks'); // The second argument is the path to the collection in Firestore.
     // Subscribe to the auth state. This will allow us to subscribe to the tasks collection when the user logs in.
