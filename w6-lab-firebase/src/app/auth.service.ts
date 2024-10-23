@@ -1,63 +1,182 @@
+/**
+ * AuthService handles all authentication-related operations including
+ * user registration, login, logout, and password reset.
+ * Naming conventions aligned with TasksService for consistency.
+ */
 import { Injectable, inject } from '@angular/core';
 import {
-  Auth, // Used to get the current user and subscribe to the auth state.
-  createUserWithEmailAndPassword, // Used to create a user in Firebase auth.
-  sendPasswordResetEmail, // Used to send a password reset email.
-  signInWithEmailAndPassword, // Used to sign in a user with email and password.
-  signOut, // Used to sign out a user.
+  Auth,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signOut,
+  UserCredential,
 } from '@angular/fire/auth';
-import { doc, Firestore, setDoc } from '@angular/fire/firestore'; // Used to interact with Firestore databse. We store user info in Firestore.
+import { 
+  doc, 
+  Firestore, 
+  setDoc 
+} from '@angular/fire/firestore';
+
+/**
+ * Interface for user authentication data
+ */
+interface UserAuthData {
+  email: string;
+  password: string;
+}
+
+/**
+ * Interface for user profile data stored in Firestore
+ */
+interface UserProfile {
+  email: string;
+  createdAt: string;
+  lastLogin: string;
+}
+
+/**
+ * Custom error class for authentication errors
+ */
+export class AuthError extends Error {
+  constructor(
+    message: string,
+    public errorCode?: string,
+    public originalError?: any
+  ) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
 
 @Injectable({
-  providedIn: 'root', // This service is provided in the root injector (AppModule). This means that the service will be available to the entire application.
+  providedIn: 'root'
 })
 export class AuthService {
-  // Inject the Auth and Firestore services. 
-  private auth = inject(Auth); // Inject AngularFireAuth service. We need it to create a user in Firebase auth.
-  private firestore = inject(Firestore);
-  
-  constructor() {}
-  
-  // Sign up with email/password. Creates user in Firebase auth and adds user info to Firestore database
-  async register({ email, password }: { email: string; password: string }) {
+  // Matching naming convention with TasksService
+  private readonly firestoreDb = inject(Firestore);
+  private readonly authService = inject(Auth);
+
+  /**
+   * Registers a new user and creates their profile in Firestore
+   * @param userAuthData - Object containing email and password
+   * @returns Promise resolving to UserCredential
+   * @throws AuthError if registration fails
+   */
+  async registerUser(userAuthData: UserAuthData): Promise<UserCredential> {
     try {
-      const credentials = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
+      const userCredential = await createUserWithEmailAndPassword(
+        this.authService,
+        userAuthData.email,
+        userAuthData.password
       );
-      // In case the user is created successfully, create a document in `users` collection
-      const ref = doc(this.firestore, `users/${credentials.user.uid}`);
-      setDoc(ref, { email }); // Set the document. Data is written to the database.
-      return credentials;
-    } catch (e) {
-      console.log("Error in register: ", e);
-      return null;
+
+      await this.createUserProfile(userCredential);
+
+      return userCredential;
+    } catch (error: any) {
+      throw this.handleAuthError(error, 'Registration failed');
     }
   }
 
-  // Sign in with email/password. We pass the email and password as parameters.
-  async login({ email, password }: { email: string; password: string }) {
+  /**
+   * Authenticates a user with email and password
+   * @param userAuthData - Object containing email and password
+   * @returns Promise resolving to UserCredential
+   * @throws AuthError if login fails
+   */
+  async authenticateUser(userAuthData: UserAuthData): Promise<UserCredential> {
     try {
-      // Sign in user. If successful, the user object is returned. Otherwise, null is returned.
-      const credentials = await signInWithEmailAndPassword(
-        this.auth, // <-- Injected AngularFireAuth service
-        email, // <-- Email passed as parameter
-        password // <-- Password passed as parameter
+      return await signInWithEmailAndPassword(
+        this.authService,
+        userAuthData.email,
+        userAuthData.password
       );
-      return credentials; // <-- Return the user object
-    } catch (e) {
-      console.log("Error in register: ", e);
-      return null;
+    } catch (error: any) {
+      throw this.handleAuthError(error, 'Authentication failed');
     }
   }
 
-  resetPw(email: string) {
-    // Pass in athentication private and email address
-    return sendPasswordResetEmail(this.auth, email);
+  /**
+   * Initiates password reset process for a user
+   * @param userEmail - User's email address
+   * @throws AuthError if sending reset email fails
+   */
+  async initiatePasswordReset(userEmail: string): Promise<void> {
+    try {
+      await sendPasswordResetEmail(this.authService, userEmail);
+    } catch (error: any) {
+      throw this.handleAuthError(error, 'Password reset initiation failed');
+    }
   }
 
-  logout() {
-    return signOut(this.auth);
+  /**
+   * Signs out the currently authenticated user
+   * @throws AuthError if logout fails
+   */
+  async signOutUser(): Promise<void> {
+    try {
+      await signOut(this.authService);
+    } catch (error: any) {
+      throw this.handleAuthError(error, 'Sign out failed');
+    }
+  }
+
+  /**
+   * Creates or updates a user profile in Firestore
+   * @param userCredential - Firebase user credential
+   * @private
+   */
+  private async createUserProfile(userCredential: UserCredential): Promise<void> {
+    try {
+      const userProfileRef = doc(this.firestoreDb, `users/${userCredential.user.uid}`);
+      const userProfileData: UserProfile = {
+        email: userCredential.user.email!,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      };
+
+      await setDoc(userProfileRef, userProfileData);
+    } catch (error: any) {
+      throw this.handleAuthError(error, 'Failed to create user profile');
+    }
+  }
+
+  /**
+   * Processes authentication errors and returns standardized error objects
+   * @param error - The original error from Firebase
+   * @param defaultMessage - Default message if error code isn't recognized
+   * @private
+   */
+  private handleAuthError(error: any, defaultMessage: string): AuthError {
+    let userMessage = defaultMessage;
+    const errorCode = error?.code || 'unknown';
+
+    // Map Firebase error codes to user-friendly messages
+    switch (error?.code) {
+      case 'auth/email-already-in-use':
+        userMessage = 'This email address is already registered';
+        break;
+      case 'auth/weak-password':
+        userMessage = 'Password must be at least 6 characters long';
+        break;
+      case 'auth/user-not-found':
+        userMessage = 'No account found with this email address';
+        break;
+      case 'auth/wrong-password':
+        userMessage = 'Incorrect password';
+        break;
+      case 'auth/invalid-email':
+        userMessage = 'Please enter a valid email address';
+        break;
+      case 'auth/too-many-requests':
+        userMessage = 'Too many attempts. Please try again later';
+        break;
+      case 'auth/network-request-failed':
+        userMessage = 'Network error. Please check your connection';
+        break;
+    }
+
+    return new AuthError(userMessage, errorCode, error);
   }
 }

@@ -1,13 +1,14 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title class="ion-text-center">Welcome Back</ion-title>
+    <ion-title class="ion-text-center">Welcome</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="login()" [formGroup]="credentials">
+  <form (ngSubmit)="handleAuthentication()" [formGroup]="userAuthForm">
     <ion-card>
       <ion-card-content>
+        <!-- Email Input -->
         <ion-item>
           <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
           <ion-input
@@ -15,34 +16,39 @@
             label="Email"
             labelPlacement="floating"
             formControlName="email"
+            autocomplete="email"
           ></ion-input>
         </ion-item>
-        @if ((email.dirty || email.touched) && email.errors) {
+        @if ((emailControl.dirty || emailControl.touched) && emailControl.errors) {
           <ion-text color="danger" class="ion-padding-start">
             <small>Please enter a valid email address</small>
           </ion-text>
         }
 
+        <!-- Password Input -->
         <ion-item>
           <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
-          <ion-label position="floating">Password</ion-label>
           <ion-input
-            [type]="showPassword ? 'text' : 'password'"
+            [type]="isPasswordVisible ? 'text' : 'password'"
+            label="Password"
+            labelPlacement="floating"
             formControlName="password"
+            autocomplete="current-password"
           ></ion-input>
           <ion-button 
             fill="clear"
             slot="end"
-            (click)="showPassword = !showPassword"
+            (click)="isPasswordVisible = !isPasswordVisible"
+            aria-label="Toggle password visibility"
           >
             <ion-icon
               slot="icon-only"
-              [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+              [name]="isPasswordVisible ? 'eye-off-outline' : 'eye-outline'"
               color="medium"
             ></ion-icon>
           </ion-button>
         </ion-item>
-        @if ((password.dirty || password.touched) && password.errors) {
+        @if ((passwordControl.dirty || passwordControl.touched) && passwordControl.errors) {
           <ion-text color="danger" class="ion-padding-start">
             <small>Password must be at least 6 characters</small>
           </ion-text>
@@ -51,34 +57,37 @@
     </ion-card>
 
     <div class="ion-padding-vertical">
+      <!-- Sign In Button -->
       <ion-button 
         type="submit" 
         expand="block" 
-        [disabled]="!credentials.valid"
+        [disabled]="userAuthForm.invalid"
         class="ion-margin-bottom"
       >
         <ion-icon name="log-in-outline" slot="start"></ion-icon>
         Sign In
       </ion-button>
 
+      <!-- Register Button -->
       <ion-button
         type="button"
         expand="block"
         color="secondary"
-        [disabled]="!credentials.valid"
-        (click)="register()"
+        [disabled]="userAuthForm.invalid"
+        (click)="handleRegistration()"
         class="ion-margin-bottom"
       >
         <ion-icon name="person-add-outline" slot="start"></ion-icon>
         Create Account
       </ion-button>
 
+      <!-- Password Reset Button -->
       <ion-button
         fill="clear"
         expand="block"
         color="medium"
-        (click)="sendReset()"
-        [disabled]="email.invalid"
+        (click)="handlePasswordReset()"
+        [disabled]="emailControl.invalid"
       >
         Forgot Password?
       </ion-button>

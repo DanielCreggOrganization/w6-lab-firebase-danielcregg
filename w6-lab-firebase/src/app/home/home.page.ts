@@ -1,5 +1,6 @@
 /**
- * HomePage Component for managing tasks
+ * HomePage Component for managing user tasks
+ * Includes task creation, updating, deletion, and user sign out functionality
  */
 import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -68,7 +69,7 @@ import { TasksService, Task } from '../tasks.service';
 })
 export class HomePage implements AfterViewInit {
   /**
-   * The new task being created
+   * The new task being created or edited
    */
   newTask: Task = {
     content: '',
@@ -76,15 +77,18 @@ export class HomePage implements AfterViewInit {
   };
 
   /**
-   * Reference to the modal in the template
+   * Reference to the modal in the template for task creation/editing
    */
   @ViewChild(IonModal) modal!: IonModal;
   
   /**
-   * Observable of user tasks
+   * Observable stream of user tasks
    */
   userTasks$: Observable<Task[]>;
 
+  /**
+   * Service injections
+   */
   private readonly authService = inject(AuthService);
   private readonly tasksService = inject(TasksService);
   private readonly router = inject(Router);
@@ -92,14 +96,19 @@ export class HomePage implements AfterViewInit {
   private readonly alertController = inject(AlertController);
 
   constructor() {
-    // Initialize the tasks observable
     this.userTasks$ = this.tasksService.getUserTasks();
   }
 
+  /**
+   * Initialize icons when component loads
+   */
   ngOnInit() {
     addIcons({ logOutOutline, pencilOutline, trashOutline, add });
   }
 
+  /**
+   * Resets the new task form to default values
+   */
   resetTask() {
     this.newTask = {
       content: '',
@@ -107,11 +116,34 @@ export class HomePage implements AfterViewInit {
     };
   }
 
-  async logout() {
-    await this.authService.logout();
-    this.router.navigateByUrl('/', { replaceUrl: true });
+  /**
+   * Signs out the current user and redirects to login page
+   */
+  async handleSignOut() {
+    try {
+      await this.authService.signOutUser();
+      await this.router.navigateByUrl('/', { replaceUrl: true });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'Failed to sign out. Please try again.',
+        buttons: ['OK']
+      });
+      await alert.present();
+    }
   }
 
+  /**
+   * Validates if task content is non-empty after trimming
+   */
+  isTaskContentValid(): boolean {
+    return Boolean(this.newTask.content && this.newTask.content.trim());
+  }
+
+  /**
+   * Creates a new task
+   */
   async addTask() {
     try {
       const loading = await this.loadingController.create({
@@ -135,12 +167,18 @@ export class HomePage implements AfterViewInit {
     }
   }
 
+  /**
+   * Toggles the completion status of a task
+   * @param ionCheckboxEvent - The checkbox event
+   * @param task - The task to toggle
+   */
   async toggleTask(ionCheckboxEvent: Event, task: Task) {
     try {
       task.completed = (ionCheckboxEvent as CheckboxCustomEvent).detail.checked;
       await this.tasksService.toggleTaskCompleted(task);
     } catch (error) {
       console.error('Error toggling task:', error);
+      // Revert the checkbox state if the update fails
       task.completed = !task.completed;
       const alert = await this.alertController.create({
         header: 'Error',
@@ -151,6 +189,10 @@ export class HomePage implements AfterViewInit {
     }
   }
 
+  /**
+   * Opens an alert dialog to update task content
+   * @param task - The task to update
+   */
   async openUpdateInput(task: Task) {
     const alert = await this.alertController.create({
       header: 'Update Task',
@@ -191,12 +233,17 @@ export class HomePage implements AfterViewInit {
     
     await alert.present();
     
+    // Focus the input field
     setTimeout(() => {
       const firstInput: HTMLInputElement | null = document.querySelector('ion-alert input');
       firstInput?.focus();
     }, 250);
   }
 
+  /**
+   * Deletes a task
+   * @param task - The task to delete
+   */
   async deleteTask(task: Task) {
     try {
       await this.tasksService.deleteTask(task);
@@ -211,11 +258,17 @@ export class HomePage implements AfterViewInit {
     }
   }
 
+  /**
+   * Closes the task modal and resets the form
+   */
   cancel() {
     this.modal.dismiss(null, 'cancel');
     this.resetTask();
   }
 
+  /**
+   * Sets up auto-focus for the modal input field
+   */
   ngAfterViewInit() {
     this.modal.ionModalDidPresent.subscribe(() => {
       setTimeout(() => {
