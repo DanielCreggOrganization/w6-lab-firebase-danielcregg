@@ -6,9 +6,10 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, AuthError } from '../auth.service';
+import { AuthService } from '../auth.service';
 import { AlertController, LoadingController } from '@ionic/angular/standalone';
 import { IonicModule } from '@ionic/angular';
+import { FirebaseError } from '@angular/fire/app';
 
 @Component({
   selector: 'app-login',
@@ -35,7 +36,6 @@ export class LoginPage {
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  // Getters for form controls
   get emailControl() {
     return this.userAuthForm.controls.email;
   }
@@ -59,8 +59,8 @@ export class LoginPage {
       await this.authService.registerUser(this.userAuthForm.getRawValue());
       await this.router.navigateByUrl('/home', { replaceUrl: true });
     } catch (error) {
-      const authError = error as AuthError;
-      await this.showAlert('Registration Failed', authError.message);
+      const errorMessage = (error as FirebaseError).message;
+      await this.showAlert('Registration Failed', errorMessage);
     } finally {
       await loading.dismiss();
     }
@@ -81,8 +81,8 @@ export class LoginPage {
       await this.authService.authenticateUser(this.userAuthForm.getRawValue());
       await this.router.navigateByUrl('/home', { replaceUrl: true });
     } catch (error) {
-      const authError = error as AuthError;
-      await this.showAlert('Authentication Failed', authError.message);
+      const errorMessage = (error as FirebaseError).message;
+      await this.showAlert('Authentication Failed', errorMessage);
     } finally {
       await loading.dismiss();
     }
@@ -109,8 +109,8 @@ export class LoginPage {
         'Please check your email for reset instructions'
       );
     } catch (error) {
-      const authError = error as AuthError;
-      await this.showAlert('Reset Failed', authError.message);
+      const errorMessage = (error as FirebaseError).message;
+      await this.showAlert('Reset Failed', errorMessage);
     } finally {
       await loading.dismiss();
     }

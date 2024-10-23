@@ -1,8 +1,7 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>My Tasks</ion-title>
+    <ion-title>Tasks</ion-title>
     <ion-buttons slot="end">
-      <!-- Updated logout to handleSignOut -->
       <ion-button (click)="handleSignOut()">
         <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
       </ion-button>
@@ -14,37 +13,34 @@
   <ion-list>
     <!-- Empty state message -->
     @if ((userTasks$ | async)?.length === 0) {
-      <ion-item>
-        <ion-label class="ion-text-center">
-          <p>Add your first task!</p>
-        </ion-label>
-      </ion-item>
+    <ion-item>
+      <ion-label class="ion-text-center">
+        <p>Add your first task!</p>
+      </ion-label>
+    </ion-item>
     }
 
     <!-- Task list -->
     @for (task of userTasks$ | async; track task.id) {
-      <ion-item-sliding>
-        <ion-item>
-          <ion-label [color]="task.completed ? 'medium' : ''">
-            {{task.content}}
-          </ion-label>
-          <ion-checkbox 
-            slot="end" 
-            (ionChange)="toggleTask($event, task)" 
-            [checked]="task.completed"
-            aria-label="Mark task as complete">
-          </ion-checkbox>
-        </ion-item>
+    <ion-item-sliding>
+      <ion-item>
+        <ion-label [color]="task.completed ? 'medium' : ''">
+          {{task.content}}
+        </ion-label>
+        <ion-checkbox slot="end" (ionChange)="toggleTask($event, task)" [checked]="task.completed"
+          aria-label="Mark task as complete">
+        </ion-checkbox>
+      </ion-item>
 
-        <ion-item-options>
-          <ion-item-option color="primary" (click)="openUpdateInput(task)">
-            <ion-icon name="pencil-outline"></ion-icon>
-          </ion-item-option>
-          <ion-item-option color="danger" (click)="deleteTask(task)">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
+      <ion-item-options>
+        <ion-item-option color="primary" (click)="openUpdateInput(task)">
+          <ion-icon name="pencil-outline"></ion-icon>
+        </ion-item-option>
+        <ion-item-option color="danger" (click)="deleteTask(task)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
     }
   </ion-list>
 
@@ -55,10 +51,7 @@
         <!-- Task input -->
         <ion-item>
           <ion-label position="stacked">New Task</ion-label>
-          <ion-input 
-            type="text" 
-            [(ngModel)]="newTask.content"
-            (keyup.enter)="addTask()"
+          <ion-input type="text" [(ngModel)]="newTask.content" (keyup.enter)="addTask()"
             placeholder="Enter task description">
           </ion-input>
         </ion-item>
@@ -67,19 +60,12 @@
           <ion-row>
             <ion-col>
               <!-- Updated to use isTaskContentValid -->
-              <ion-button 
-                (click)="addTask()" 
-                color="primary" 
-                expand="block"
-                [disabled]="!isTaskContentValid()">
+              <ion-button (click)="addTask()" color="primary" expand="block" [disabled]="!isTaskContentValid()">
                 Add Task
               </ion-button>
             </ion-col>
             <ion-col>
-              <ion-button 
-                (click)="cancel()" 
-                color="medium" 
-                expand="block">
+              <ion-button (click)="cancel()" color="medium" expand="block">
                 Cancel
               </ion-button>
             </ion-col>
@@ -96,3 +82,12 @@
     </ion-fab-button>
   </ion-fab>
 </ion-content>
+
+<!-- User email display at bottom -->
+<ion-footer class="ion-no-border">
+  <ion-toolbar class="ion-text-center">
+    <ion-text color="medium">
+      Logged in user: <strong>{{getUserEmail()}}</strong>
+    </ion-text>
+  </ion-toolbar>
+</ion-footer>

@@ -30,12 +30,15 @@ import {
   IonCol,
   IonFab,
   IonFabButton,
+  IonFooter,
+  IonText,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { Observable } from 'rxjs';
 import { logOutOutline, pencilOutline, trashOutline, add } from 'ionicons/icons';
 import { AuthService } from '../auth.service';
 import { TasksService, Task } from '../tasks.service';
+import { User } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-home',
@@ -65,6 +68,8 @@ import { TasksService, Task } from '../tasks.service';
     IonCol,
     IonFab,
     IonFabButton,
+    IonFooter,
+    IonText,
   ],
 })
 export class HomePage implements AfterViewInit {
@@ -77,14 +82,19 @@ export class HomePage implements AfterViewInit {
   };
 
   /**
-   * Reference to the modal in the template for task creation/editing
+   * Reference to the modal in the template
    */
   @ViewChild(IonModal) modal!: IonModal;
-  
+
   /**
    * Observable stream of user tasks
    */
   userTasks$: Observable<Task[]>;
+
+  /**
+   * Current authenticated user
+   */
+  currentUser: User | null;
 
   /**
    * Service injections
@@ -97,6 +107,14 @@ export class HomePage implements AfterViewInit {
 
   constructor() {
     this.userTasks$ = this.tasksService.getUserTasks();
+    this.currentUser = this.authService.getCurrentUser();
+  }
+
+  /**
+   * Gets the user's email address
+   */
+  getUserEmail(): string {
+    return this.currentUser?.email || 'Guest';
   }
 
   /**
@@ -150,9 +168,9 @@ export class HomePage implements AfterViewInit {
         message: 'Adding task...'
       });
       await loading.present();
-      
+
       await this.tasksService.createTask(this.newTask);
-      
+
       await loading.dismiss();
       this.modal.dismiss(null, 'confirm');
       this.resetTask();
@@ -178,7 +196,6 @@ export class HomePage implements AfterViewInit {
       await this.tasksService.toggleTaskCompleted(task);
     } catch (error) {
       console.error('Error toggling task:', error);
-      // Revert the checkbox state if the update fails
       task.completed = !task.completed;
       const alert = await this.alertController.create({
         header: 'Error',
@@ -215,7 +232,7 @@ export class HomePage implements AfterViewInit {
             try {
               task.content = data.Task;
               await this.tasksService.updateTask(task);
-              return true; // Close the alert on success
+              return true;
             } catch (error) {
               console.error('Error updating task:', error);
               const errorAlert = await this.alertController.create({
@@ -224,16 +241,15 @@ export class HomePage implements AfterViewInit {
                 buttons: ['OK']
               });
               await errorAlert.present();
-              return false; // Keep the alert open on error
+              return false;
             }
           },
         },
       ],
     });
-    
+
     await alert.present();
-    
-    // Focus the input field
+
     setTimeout(() => {
       const firstInput: HTMLInputElement | null = document.querySelector('ion-alert input');
       firstInput?.focus();
