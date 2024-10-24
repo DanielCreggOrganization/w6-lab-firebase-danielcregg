@@ -19,7 +19,7 @@
             autocomplete="email"
           ></ion-input>
         </ion-item>
-        @if ((emailControl.dirty || emailControl.touched) && emailControl.errors) {
+        @if (userAuthForm.controls.email.dirty && userAuthForm.controls.email.errors) {
           <ion-text color="danger" class="ion-padding-start">
             <small>Please enter a valid email address</small>
           </ion-text>
@@ -48,7 +48,7 @@
             ></ion-icon>
           </ion-button>
         </ion-item>
-        @if ((passwordControl.dirty || passwordControl.touched) && passwordControl.errors) {
+        @if (userAuthForm.controls.password.dirty && userAuthForm.controls.password.errors) {
           <ion-text color="danger" class="ion-padding-start">
             <small>Password must be at least 6 characters</small>
           </ion-text>
@@ -87,7 +87,7 @@
         expand="block"
         color="medium"
         (click)="handlePasswordReset()"
-        [disabled]="emailControl.invalid"
+        [disabled]="userAuthForm.controls.email.invalid"
       >
         Forgot Password?
       </ion-button>
