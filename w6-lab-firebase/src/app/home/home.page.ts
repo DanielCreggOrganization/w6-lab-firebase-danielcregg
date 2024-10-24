@@ -81,24 +81,15 @@ export class HomePage {
         }
       ],
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
+        { text: 'Cancel', role: 'cancel' },
         {
           text: 'Add',
-          handler: async (data) => {
-            if (!data.content?.trim()) return false;
-            
-            try {
-              await this.tasks.createTask({
+          handler: (data) => {
+            if (data.content?.trim()) {
+              this.tasks.createTask({
                 content: data.content,
                 completed: false
               });
-              return true;
-            } catch {
-              this.showError('Failed to add task');
-              return false;
             }
           }
         }
@@ -106,20 +97,11 @@ export class HomePage {
     });
 
     await alert.present();
-    setTimeout(() => {
-      const input = document.querySelector('ion-alert input') as HTMLInputElement;
-      input?.focus();
-    }, 250);
   }
 
   async toggleTask(event: Event, task: Task) {
-    try {
-      task.completed = (event as CustomEvent).detail.checked;
-      await this.tasks.toggleTaskCompleted(task);
-    } catch {
-      task.completed = !task.completed;
-      this.showError('Failed to update task status');
-    }
+    task.completed = (event as CustomEvent).detail.checked;
+    await this.tasks.toggleTaskCompleted(task);
   }
 
   async editTask(task: Task, slidingItem: IonItemSliding) {
@@ -134,57 +116,28 @@ export class HomePage {
         { 
           text: 'Cancel', 
           role: 'cancel',
-          handler: () => {
-            slidingItem.close();
-          }
+          handler: () => slidingItem.close()
         },
         { 
           text: 'Update',
-          handler: async (data) => {
-            try {
-              await this.tasks.updateTask({ ...task, content: data.content });
-              slidingItem.close();
-              return true;
-            } catch {
-              this.showError('Failed to update task');
-              return false;
-            }
+          handler: (data) => {
+            this.tasks.updateTask({ ...task, content: data.content });
+            slidingItem.close();
           }
         }
       ]
     });
 
     await alert.present();
-    setTimeout(() => {
-      const input = document.querySelector('ion-alert input') as HTMLInputElement;
-      input?.focus();
-    }, 250);
   }
 
   async deleteTask(task: Task, slidingItem: IonItemSliding) {
-    try {
-      await this.tasks.deleteTask(task);
-      slidingItem.close();
-    } catch {
-      this.showError('Failed to delete task');
-    }
+    await this.tasks.deleteTask(task);
+    slidingItem.close();
   }
 
   async signOut() {
-    try {
-      await this.auth.signOutUser();
-      await this.router.navigateByUrl('/', { replaceUrl: true });
-    } catch {
-      this.showError('Failed to sign out');
-    }
-  }
-
-  private async showError(message: string) {
-    const alert = await this.alerts.create({
-      header: 'Error',
-      message,
-      buttons: ['OK']
-    });
-    await alert.present();
+    await this.auth.signOutUser();
+    await this.router.navigateByUrl('/', { replaceUrl: true });
   }
 }
