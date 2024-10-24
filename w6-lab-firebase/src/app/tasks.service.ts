@@ -2,7 +2,6 @@
  * This file contains the TasksService which manages task data using Firebase/Firestore.
  * It handles user authentication state and provides methods for CRUD operations on tasks.
  */
-
 import { Injectable, inject } from '@angular/core';
 import { Auth, onAuthStateChanged, User } from '@angular/fire/auth';
 import {
