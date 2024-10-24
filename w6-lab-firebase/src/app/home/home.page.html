@@ -22,7 +22,7 @@
 
     <!-- Task list -->
     @for (task of userTasks$ | async; track task.id) {
-      <ion-item-sliding>
+      <ion-item-sliding #slidingItem>
         <ion-item>
           <ion-label [color]="task.completed ? 'medium' : ''">
             {{task.content}}
@@ -36,10 +36,10 @@
         </ion-item>
 
         <ion-item-options>
-          <ion-item-option color="primary" (click)="editTask(task)">
+          <ion-item-option color="primary" (click)="editTask(task, slidingItem)">
             <ion-icon name="pencil-outline"></ion-icon>
           </ion-item-option>
-          <ion-item-option color="danger" (click)="deleteTask(task)">
+          <ion-item-option color="danger" (click)="deleteTask(task, slidingItem)">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-item-option>
         </ion-item-options>

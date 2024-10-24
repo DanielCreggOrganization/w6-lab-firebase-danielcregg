@@ -122,7 +122,7 @@ export class HomePage {
     }
   }
 
-  async editTask(task: Task) {
+  async editTask(task: Task, slidingItem: IonItemSliding) {
     const alert = await this.alerts.create({
       header: 'Update Task',
       inputs: [{ 
@@ -131,12 +131,19 @@ export class HomePage {
         type: 'text' 
       }],
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { 
+          text: 'Cancel', 
+          role: 'cancel',
+          handler: () => {
+            slidingItem.close();
+          }
+        },
         { 
           text: 'Update',
           handler: async (data) => {
             try {
               await this.tasks.updateTask({ ...task, content: data.content });
+              slidingItem.close();
               return true;
             } catch {
               this.showError('Failed to update task');
@@ -154,9 +161,10 @@ export class HomePage {
     }, 250);
   }
 
-  async deleteTask(task: Task) {
+  async deleteTask(task: Task, slidingItem: IonItemSliding) {
     try {
       await this.tasks.deleteTask(task);
+      slidingItem.close();
     } catch {
       this.showError('Failed to delete task');
     }
