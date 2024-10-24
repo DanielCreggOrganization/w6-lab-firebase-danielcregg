@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import {
@@ -23,11 +23,9 @@ import {
   IonFabButton,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { Observable } from 'rxjs';
 import { logOutOutline, pencilOutline, trashOutline, add } from 'ionicons/icons';
 import { AuthService } from '../auth.service';
 import { TasksService, Task } from '../tasks.service';
-import { User } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-home',
@@ -56,17 +54,15 @@ import { User } from '@angular/fire/auth';
   ],
 })
 export class HomePage {
-  userTasks$: Observable<Task[]>;
-  currentUser: User | null;
+  private auth = inject(AuthService);
+  private tasks = inject(TasksService);
+  private router = inject(Router);
+  private alerts = inject(AlertController);
 
-  constructor(
-    private auth: AuthService,
-    private tasks: TasksService,
-    private router: Router,
-    private alerts: AlertController
-  ) {
-    this.userTasks$ = this.tasks.getUserTasks();
-    this.currentUser = this.auth.getCurrentUser();
+  userTasks$ = this.tasks.getUserTasks();
+  currentUser = this.auth.getCurrentUser();
+
+  constructor() {
     addIcons({ logOutOutline, pencilOutline, trashOutline, add });
   }
 
