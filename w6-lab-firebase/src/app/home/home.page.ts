@@ -54,20 +54,23 @@ import { TasksService, Task } from '../tasks.service';
   ],
 })
 export class HomePage {
-  private auth = inject(AuthService);
-  private tasks = inject(TasksService);
-  private router = inject(Router);
-  private alerts = inject(AlertController);
+  private authService = inject(AuthService);
+  private tasksService = inject(TasksService);
+  private routerService = inject(Router);
+  private alertController = inject(AlertController);
 
-  userTasks$ = this.tasks.getUserTasks();
-  currentUser = this.auth.getCurrentUser();
+  // Get the user's tasks from the tasks service
+  userTasks$ = this.tasksService.getUserTasks();
+  // Get the current user from the auth service to display the user's email at the bottom of the page
+  currentUser = this.authService.fetchActiveUser();
 
   constructor() {
+    // Add the necessary icons to the page
     addIcons({ logOutOutline, pencilOutline, trashOutline, add });
   }
 
   async addTask() {
-    const alert = await this.alerts.create({
+    const alert = await this.alertController.create({
       header: 'New Task',
       inputs: [
         {
@@ -82,7 +85,7 @@ export class HomePage {
           text: 'Add',
           handler: (data) => {
             if (data.content?.trim()) {
-              this.tasks.createTask({
+              this.tasksService.createTask({
                 content: data.content,
                 completed: false
               });
@@ -97,11 +100,11 @@ export class HomePage {
 
   async toggleTask(event: Event, task: Task) {
     task.completed = (event as CustomEvent).detail.checked;
-    await this.tasks.toggleTaskCompleted(task);
+    await this.tasksService.toggleTaskCompleted(task);
   }
 
   async editTask(task: Task, slidingItem: IonItemSliding) {
-    const alert = await this.alerts.create({
+    const alert = await this.alertController.create({
       header: 'Update Task',
       inputs: [{ 
         name: 'content', 
@@ -117,7 +120,7 @@ export class HomePage {
         { 
           text: 'Update',
           handler: (data) => {
-            this.tasks.updateTask({ ...task, content: data.content });
+            this.tasksService.updateTask({ ...task, content: data.content });
             slidingItem.close();
           }
         }
@@ -128,11 +131,11 @@ export class HomePage {
   }
 
   async deleteTask(task: Task) {
-    await this.tasks.deleteTask(task);
+    await this.tasksService.deleteTask(task);
   }
 
   async signOut() {
-    await this.auth.signOutUser();
-    await this.router.navigateByUrl('/', { replaceUrl: true });
+    await this.authService.signOutUser();
+    await this.routerService.navigateByUrl('/', { replaceUrl: true });
   }
 }

@@ -60,7 +60,7 @@ export class AuthService {
    * Gets the current authenticated user
    * @returns The current User or null
    */
-  getCurrentUser(): User | null {
+  fetchActiveUser(): User | null {
     return this.firebaseAuth.currentUser;
   }
 
