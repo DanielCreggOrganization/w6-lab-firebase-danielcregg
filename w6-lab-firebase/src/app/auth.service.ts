@@ -1,3 +1,7 @@
+/**
+ * Service responsible for handling authentication operations
+ * including user registration, authentication, password reset, and sign out.
+ */
 import { Injectable, inject } from '@angular/core';
 import {
   Auth,
@@ -9,6 +13,9 @@ import {
   UserCredential,
 } from '@angular/fire/auth';
 
+/**
+ * Interface for authentication request data
+ */
 interface UserAuthData {
   email: string;
   password: string;
@@ -18,50 +25,59 @@ interface UserAuthData {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly authService = inject(Auth);
+  /**
+   * Firebase Authentication instance
+   */
+  private readonly firebaseAuth = inject(Auth);
 
   /**
-   * Registers a new user
+   * Registers a new user with email and password
+   * @param userAuthData - The user's email and password
+   * @returns Promise resolving to UserCredential
    */
   async registerUser(userAuthData: UserAuthData): Promise<UserCredential> {
     return createUserWithEmailAndPassword(
-      this.authService,
+      this.firebaseAuth,
       userAuthData.email,
       userAuthData.password
     );
   }
 
   /**
-   * Authenticates a user
+   * Authenticates a user with email and password
+   * @param userAuthData - The user's email and password
+   * @returns Promise resolving to UserCredential
    */
   async authenticateUser(userAuthData: UserAuthData): Promise<UserCredential> {
     return signInWithEmailAndPassword(
-      this.authService,
+      this.firebaseAuth,
       userAuthData.email,
       userAuthData.password
     );
   }
 
-
   /**
-   * 
-   * @returns The current authenticated user
+   * Gets the current authenticated user
+   * @returns The current User or null
    */
   getCurrentUser(): User | null {
-    return this.authService.currentUser;
+    return this.firebaseAuth.currentUser;
   }
 
   /**
-   * Sends password reset email
+   * Initiates password reset process for a user
+   * @param userEmail - The email address for password reset
+   * @returns Promise resolving when email is sent
    */
   async initiatePasswordReset(userEmail: string): Promise<void> {
-    return sendPasswordResetEmail(this.authService, userEmail);
+    return sendPasswordResetEmail(this.firebaseAuth, userEmail);
   }
 
   /**
    * Signs out the current user
+   * @returns Promise resolving when sign out is complete
    */
   async signOutUser(): Promise<void> {
-    return signOut(this.authService);
+    return signOut(this.firebaseAuth);
   }
 }
