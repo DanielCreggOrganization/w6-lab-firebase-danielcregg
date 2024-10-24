@@ -127,9 +127,8 @@ export class HomePage {
     await alert.present();
   }
 
-  async deleteTask(task: Task, slidingItem: IonItemSliding) {
+  async deleteTask(task: Task) {
     await this.tasks.deleteTask(task);
-    slidingItem.close();
   }
 
   async signOut() {
