@@ -2,7 +2,7 @@
   <ion-toolbar color="primary">
     <ion-title>Tasks</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="handleSignOut()">
+      <ion-button (click)="signOut()">
         <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -11,83 +11,54 @@
 
 <ion-content>
   <ion-list>
-    <!-- Empty state message -->
+    <!-- Empty state -->
     @if ((userTasks$ | async)?.length === 0) {
-    <ion-item>
-      <ion-label class="ion-text-center">
-        <p>Add your first task!</p>
-      </ion-label>
-    </ion-item>
+      <ion-item>
+        <ion-label class="ion-text-center">
+          <p>Add your first task!</p>
+        </ion-label>
+      </ion-item>
     }
 
     <!-- Task list -->
     @for (task of userTasks$ | async; track task.id) {
-    <ion-item-sliding>
-      <ion-item>
-        <ion-label [color]="task.completed ? 'medium' : ''">
-          {{task.content}}
-        </ion-label>
-        <ion-checkbox slot="end" (ionChange)="toggleTask($event, task)" [checked]="task.completed"
-          aria-label="Mark task as complete">
-        </ion-checkbox>
-      </ion-item>
+      <ion-item-sliding>
+        <ion-item>
+          <ion-label [color]="task.completed ? 'medium' : ''">
+            {{task.content}}
+          </ion-label>
+          <ion-checkbox 
+            slot="end" 
+            (ionChange)="toggleTask($event, task)" 
+            [checked]="task.completed"
+            aria-label="Mark task as complete">
+          </ion-checkbox>
+        </ion-item>
 
-      <ion-item-options>
-        <ion-item-option color="primary" (click)="openUpdateInput(task)">
-          <ion-icon name="pencil-outline"></ion-icon>
-        </ion-item-option>
-        <ion-item-option color="danger" (click)="deleteTask(task)">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+        <ion-item-options>
+          <ion-item-option color="primary" (click)="editTask(task)">
+            <ion-icon name="pencil-outline"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="danger" (click)="deleteTask(task)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
     }
   </ion-list>
 
-  <!-- Add task modal -->
-  <ion-modal trigger="open-modal" #modal [breakpoints]="[0, 0.25, 0.5, 1]" [initialBreakpoint]="0.25">
-    <ng-template>
-      <ion-content class="ion-padding">
-        <!-- Task input -->
-        <ion-item>
-          <ion-label position="stacked">New Task</ion-label>
-          <ion-input type="text" [(ngModel)]="newTask.content" (keyup.enter)="addTask()"
-            placeholder="Enter task description">
-          </ion-input>
-        </ion-item>
-
-        <div class="ion-margin-top">
-          <ion-row>
-            <ion-col>
-              <!-- Updated to use isTaskContentValid -->
-              <ion-button (click)="addTask()" color="primary" expand="block" [disabled]="!isTaskContentValid()">
-                Add Task
-              </ion-button>
-            </ion-col>
-            <ion-col>
-              <ion-button (click)="cancel()" color="medium" expand="block">
-                Cancel
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </div>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
-
-  <!-- Add task FAB button -->
+  <!-- FAB Button -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button id="open-modal">
+    <ion-fab-button (click)="addTask()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>
 
-<!-- User email display at bottom -->
 <ion-footer class="ion-no-border">
   <ion-toolbar class="ion-text-center">
     <ion-text color="medium">
-      Logged in user: <strong>{{getUserEmail()}}</strong>
+      Logged in as: <strong>{{currentUser?.email || 'Guest'}}</strong>
     </ion-text>
   </ion-toolbar>
 </ion-footer>

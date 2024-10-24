@@ -1,15 +1,8 @@
-/**
- * HomePage Component for managing user tasks
- * Includes task creation, updating, deletion, and user sign out functionality
- */
-import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import {
   AlertController,
-  LoadingController,
-  CheckboxCustomEvent,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -24,14 +17,10 @@ import {
   IonCheckbox,
   IonItemOptions,
   IonItemOption,
-  IonModal,
-  IonInput,
-  IonRow,
-  IonCol,
-  IonFab,
-  IonFabButton,
   IonFooter,
   IonText,
+  IonFab,
+  IonFabButton,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { Observable } from 'rxjs';
@@ -42,12 +31,10 @@ import { User } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+  templateUrl: './home.page.html',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -62,235 +49,134 @@ import { User } from '@angular/fire/auth';
     IonCheckbox,
     IonItemOptions,
     IonItemOption,
-    IonModal,
-    IonInput,
-    IonRow,
-    IonCol,
-    IonFab,
-    IonFabButton,
     IonFooter,
     IonText,
+    IonFab,
+    IonFabButton,
   ],
 })
-export class HomePage implements AfterViewInit {
-  /**
-   * The new task being created or edited
-   */
-  newTask: Task = {
-    content: '',
-    completed: false
-  };
-
-  /**
-   * Reference to the modal in the template
-   */
-  @ViewChild(IonModal) modal!: IonModal;
-
-  /**
-   * Observable stream of user tasks
-   */
+export class HomePage {
   userTasks$: Observable<Task[]>;
-
-  /**
-   * Current authenticated user
-   */
   currentUser: User | null;
 
-  /**
-   * Service injections
-   */
-  private readonly authService = inject(AuthService);
-  private readonly tasksService = inject(TasksService);
-  private readonly router = inject(Router);
-  private readonly loadingController = inject(LoadingController);
-  private readonly alertController = inject(AlertController);
-
-  constructor() {
-    this.userTasks$ = this.tasksService.getUserTasks();
-    this.currentUser = this.authService.getCurrentUser();
-  }
-
-  /**
-   * Gets the user's email address
-   */
-  getUserEmail(): string {
-    return this.currentUser?.email || 'Guest';
-  }
-
-  /**
-   * Initialize icons when component loads
-   */
-  ngOnInit() {
+  constructor(
+    private auth: AuthService,
+    private tasks: TasksService,
+    private router: Router,
+    private alerts: AlertController
+  ) {
+    this.userTasks$ = this.tasks.getUserTasks();
+    this.currentUser = this.auth.getCurrentUser();
     addIcons({ logOutOutline, pencilOutline, trashOutline, add });
   }
 
-  /**
-   * Resets the new task form to default values
-   */
-  resetTask() {
-    this.newTask = {
-      content: '',
-      completed: false,
-    };
-  }
-
-  /**
-   * Signs out the current user and redirects to login page
-   */
-  async handleSignOut() {
-    try {
-      await this.authService.signOutUser();
-      await this.router.navigateByUrl('/', { replaceUrl: true });
-    } catch (error) {
-      console.error('Error signing out:', error);
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Failed to sign out. Please try again.',
-        buttons: ['OK']
-      });
-      await alert.present();
-    }
-  }
-
-  /**
-   * Validates if task content is non-empty after trimming
-   */
-  isTaskContentValid(): boolean {
-    return Boolean(this.newTask.content && this.newTask.content.trim());
-  }
-
-  /**
-   * Creates a new task
-   */
   async addTask() {
-    try {
-      const loading = await this.loadingController.create({
-        message: 'Adding task...'
-      });
-      await loading.present();
-
-      await this.tasksService.createTask(this.newTask);
-
-      await loading.dismiss();
-      this.modal.dismiss(null, 'confirm');
-      this.resetTask();
-    } catch (error) {
-      console.error('Error adding task:', error);
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Failed to add task. Please try again.',
-        buttons: ['OK']
-      });
-      await alert.present();
-    }
-  }
-
-  /**
-   * Toggles the completion status of a task
-   * @param ionCheckboxEvent - The checkbox event
-   * @param task - The task to toggle
-   */
-  async toggleTask(ionCheckboxEvent: Event, task: Task) {
-    try {
-      task.completed = (ionCheckboxEvent as CheckboxCustomEvent).detail.checked;
-      await this.tasksService.toggleTaskCompleted(task);
-    } catch (error) {
-      console.error('Error toggling task:', error);
-      task.completed = !task.completed;
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Failed to update task status. Please try again.',
-        buttons: ['OK']
-      });
-      await alert.present();
-    }
-  }
-
-  /**
-   * Opens an alert dialog to update task content
-   * @param task - The task to update
-   */
-  async openUpdateInput(task: Task) {
-    const alert = await this.alertController.create({
-      header: 'Update Task',
+    const alert = await this.alerts.create({
+      header: 'New Task',
       inputs: [
         {
-          name: 'Task',
+          name: 'content',
           type: 'text',
-          placeholder: 'Task content',
-          value: task.content,
-        },
+          placeholder: 'Enter task description'
+        }
       ],
       buttons: [
         {
           text: 'Cancel',
-          role: 'cancel',
+          role: 'cancel'
         },
         {
-          text: 'Update',
+          text: 'Add',
           handler: async (data) => {
+            if (!data.content?.trim()) return false;
+            
             try {
-              task.content = data.Task;
-              await this.tasksService.updateTask(task);
-              return true;
-            } catch (error) {
-              console.error('Error updating task:', error);
-              const errorAlert = await this.alertController.create({
-                header: 'Error',
-                message: 'Failed to update task. Please try again.',
-                buttons: ['OK']
+              await this.tasks.createTask({
+                content: data.content,
+                completed: false
               });
-              await errorAlert.present();
+              return true;
+            } catch {
+              this.showError('Failed to add task');
               return false;
             }
-          },
-        },
-      ],
+          }
+        }
+      ]
     });
 
     await alert.present();
-
     setTimeout(() => {
-      const firstInput: HTMLInputElement | null = document.querySelector('ion-alert input');
-      firstInput?.focus();
+      const input = document.querySelector('ion-alert input') as HTMLInputElement;
+      input?.focus();
     }, 250);
   }
 
-  /**
-   * Deletes a task
-   * @param task - The task to delete
-   */
-  async deleteTask(task: Task) {
+  async toggleTask(event: Event, task: Task) {
     try {
-      await this.tasksService.deleteTask(task);
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'Failed to delete task. Please try again.',
-        buttons: ['OK']
-      });
-      await alert.present();
+      task.completed = (event as CustomEvent).detail.checked;
+      await this.tasks.toggleTaskCompleted(task);
+    } catch {
+      task.completed = !task.completed;
+      this.showError('Failed to update task status');
     }
   }
 
-  /**
-   * Closes the task modal and resets the form
-   */
-  cancel() {
-    this.modal.dismiss(null, 'cancel');
-    this.resetTask();
+  async editTask(task: Task) {
+    const alert = await this.alerts.create({
+      header: 'Update Task',
+      inputs: [{ 
+        name: 'content', 
+        value: task.content, 
+        type: 'text' 
+      }],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { 
+          text: 'Update',
+          handler: async (data) => {
+            try {
+              await this.tasks.updateTask({ ...task, content: data.content });
+              return true;
+            } catch {
+              this.showError('Failed to update task');
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+    setTimeout(() => {
+      const input = document.querySelector('ion-alert input') as HTMLInputElement;
+      input?.focus();
+    }, 250);
   }
 
-  /**
-   * Sets up auto-focus for the modal input field
-   */
-  ngAfterViewInit() {
-    this.modal.ionModalDidPresent.subscribe(() => {
-      setTimeout(() => {
-        const firstInput: HTMLInputElement | null = document.querySelector('ion-modal input');
-        firstInput?.focus();
-      }, 250);
+  async deleteTask(task: Task) {
+    try {
+      await this.tasks.deleteTask(task);
+    } catch {
+      this.showError('Failed to delete task');
+    }
+  }
+
+  async signOut() {
+    try {
+      await this.auth.signOutUser();
+      await this.router.navigateByUrl('/', { replaceUrl: true });
+    } catch {
+      this.showError('Failed to sign out');
+    }
+  }
+
+  private async showError(message: string) {
+    const alert = await this.alerts.create({
+      header: 'Error',
+      message,
+      buttons: ['OK']
     });
+    await alert.present();
   }
 }
