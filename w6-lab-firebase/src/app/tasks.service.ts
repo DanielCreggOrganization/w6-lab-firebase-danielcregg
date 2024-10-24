@@ -37,8 +37,11 @@ export interface Task {
  */
 @Injectable({ providedIn: 'root' })
 export class TasksService {
+  // Inject Firestore service to interact with Firestore and access tasks collection
   private readonly firestoreDb = inject(Firestore);
+  // Inject the Auth service to manage user authentication
   private readonly authService = inject(Auth);
+  // Reference to the 'tasks' collection in Firestore database used to interact with tasks
   private readonly tasksCollectionRef = collection(this.firestoreDb, 'tasks');
   
   /**
